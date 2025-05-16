@@ -24,14 +24,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
         
+      - name: Install Chrome
+        run: |
+          wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+          echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' | sudo tee /etc/apt/sources.list.d/google-chrome.list
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+          google-chrome --version
+          
       - name: Run Cypress tests
         uses: cypress-io/github-action@v5
         with:
           browser: chrome
           headless: true
           record: false
+          command: npx cypress run --browser chrome --headless --config video=true,videoCompression=32,chromeWebSecurity=false
         env:
           CYPRESS_BASE_URL: https://www.saucedemo.com
+          CYPRESS_RETRIES: 2
+          DISPLAY: :99
 
       - name: Upload test results
         if: always()
